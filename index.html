@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+        <link href="style.css" rel="stylesheet" />
+        <title>Min Hållplats</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    </head>
+    <body onload="getInfo()">
+        <!-------------------------------------------------------------------->
+        <!----><script type="text/javascript" src="cordova.js"></script><!---->
+        <!-------------------------------------------------------------------->
+
+        <!-- Title on the top -->
+        <h1 id="title">Min Hållplats</h1>
+        <input id="sBar" type="text" placeholder="Ange Hållplats..." style="display: none" />
+        
+        <!-- Light background which will contain all departures -->
+        <div id="resultBg">
+            <!-- Name of station (in this case "Liljeholmen") - This is added in manually and isnt user controlled at the moment -->
+            <div id="station">Liljeholmen</div>
+            
+            <!-- Unmarked List that will contain list-elements made by script -->
+            <ul id="departures"></ul>
+        </div>
+
+        <!-- The refresh button - Will refresh the page and update the time -->
+        <img src="images/refresh1.svg" id="refreshButton" width="50" height="50" onclick="refresh()" />
+
+        <!-- Takes user to my homepage -->
+        <img src="images/pWeb.svg" id="pButton" width="50" height="50" onclick="redirect('https://faisaal99.github.io/')" />
+
+
+        <script type="text/javascript">//SCRIPT STARTS HERE ---------------------------------
+
+            function createNode(element) {
+                return document.createElement(element);
+            }
+
+            function append(parent, el) {
+                return parent.appendChild(el);
+            }
+
+            function refresh() {
+                location.reload(true);
+            }
+
+            //Aquires data from Trafiklab to then display on the page
+            function getInfo() {
+
+                const ul = document.getElementById('departures');
+                const url = 'https://cors-anywhere.herokuapp.com/http://api.sl.se/api2/realtimedeparturesV4.json?key=1c5b4c6f30a14527990ad6f3090214fd&siteid=9294&timewindow=15';
+                fetch(url)
+                    .then((resp) => resp.json())
+                    .then(function (data) {
+                        let departures = data.ResponseData.Metros;
+                        return departures.map(function (departure) {
+                            let li = createNode('li'),
+                                img = createNode('img'),
+                                span = createNode('span');
+                            var walkingtime = 3; // Removes 3 minutes from the actual arrival of the train to take the time from home to station into account
+                            if (departure.DisplayTime == "Nu") {
+                                departure.DisplayTime = "0 min";
+                            }
+                            var dt = departure.DisplayTime.replace(" min", "");
+                            dt = dt - walkingtime;
+                            if (dt > 0) {
+                                span.innerHTML += `${departure.LineNumber + " · " + departure.Destination + "&emsp;" + dt + " min" + "<br /><br />"}`;
+                                append(li, span);
+                                append(ul, li);
+                            }
+                            /*span.innerHTML = `${departure.LineNumber + " · " + departure.Destination + ": &emsp;" + departure.DisplayTime + "<br /><br />"}`;
+                            append(li, img);
+                            append(li, span);
+                            append(ul, li);*/
+                        })
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
+            }
+
+            // Function that redirects user to my homepage by opening a new tab
+            function redirect(url) {
+                var win = window.open(url, '_blank');
+                win.focus();
+            }
+
+            //Old unused code
+            /*
+            function search() {
+                var s = document.getElementById("sBar");
+                var t = document.getElementById("title");
+                                
+                if (s.style.display == "none") {
+                    s.style.display = "block";
+                    s.value = "";
+                    t.style.display = "none";
+                }
+                else if (s.style.display == "block") {
+                    s.style.display = "none";
+                    t.style.display = "block";
+                }
+            }*/
+        </script>
+                
+    </body>
+</html>
